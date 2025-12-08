@@ -1,69 +1,77 @@
 #include <iostream>
-#include <fstream>
-#include <filesystem>
+#include <cstdio>     // for remove(), rename()
+#include <fstream>    // for file read/write
 
 using namespace std;
-namespace fs = std::filesystem;
 
-void createFile(const string &filename) {
-    ofstream file(filename);
-    if (!file) {
+void createFile(const char* filename) {
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
         cout << "Error creating file.\n";
         return;
     }
-    cout << "File '" << filename << "' created successfully!\n";
+    cout << "File created successfully!\n";
+    fclose(fp);
 }
 
-void deleteFile(const string &filename) {
-    if (fs::exists(filename)) {
-        fs::remove(filename);
-        cout << "File '" << filename << "' deleted successfully!\n";
-    } else {
-        cout << "File does not exist!\n";
-    }
+void deleteFile(const char* filename) {
+    if (remove(filename) == 0)
+        cout << "File deleted successfully!\n";
+    else
+        cout << "File not found!\n";
 }
 
-void copyFile(const string &source, const string &dest) {
-    if (!fs::exists(source)) {
+void copyFile(const char* source, const char* dest) {
+    FILE *src = fopen(source, "rb");
+    if (src == NULL) {
         cout << "Source file not found!\n";
         return;
     }
-    fs::copy(source, dest, fs::copy_options::overwrite_existing);
-    cout << "File copied from '" << source << "' to '" << dest << "' successfully!\n";
+
+    FILE *dst = fopen(dest, "wb");
+    char ch;
+
+    while (!feof(src)) {
+        ch = fgetc(src);
+        if (!feof(src))
+            fputc(ch, dst);
+    }
+
+    fclose(src);
+    fclose(dst);
+    cout << "File copied successfully!\n";
 }
 
-void moveFile(const string &source, const string &dest) {
-    if (!fs::exists(source)) {
-        cout << "Source file not found!\n";
-        return;
-    }
-    fs::rename(source, dest);
-    cout << "File moved from '" << source << "' to '" << dest << "' successfully!\n";
+void moveFile(const char* source, const char* dest) {
+    if (rename(source, dest) == 0)
+        cout << "File moved successfully!\n";
+    else
+        cout << "Error moving file!\n";
 }
 
 int main() {
     int choice;
-    string file1, file2;
+    char file1[100], file2[100];
 
     while (true) {
-        cout << "\n--- File Operation Simulator ---\n";
+        cout << "\n--- File Operations ---\n";
         cout << "1. Create File\n";
         cout << "2. Delete File\n";
         cout << "3. Copy File\n";
         cout << "4. Move File\n";
         cout << "5. Exit\n";
-        cout << "Enter your choice: ";
+        cout << "Enter choice: ";
         cin >> choice;
 
         switch (choice) {
             case 1:
-                cout << "Enter file name to create: ";
+                cout << "Enter filename to create: ";
                 cin >> file1;
                 createFile(file1);
                 break;
 
             case 2:
-                cout << "Enter file name to delete: ";
+                cout << "Enter filename to delete: ";
                 cin >> file1;
                 deleteFile(file1);
                 break;
@@ -85,13 +93,11 @@ int main() {
                 break;
 
             case 5:
-                cout << "Exiting program...\n";
+                cout << "Exiting program.\n";
                 return 0;
 
             default:
                 cout << "Invalid choice! Try again.\n";
         }
     }
-
-    return 0;
 }
