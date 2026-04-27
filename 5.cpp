@@ -32,7 +32,8 @@ int main(){
 
         for(int i=0;i<n;i++){
             if(at[i] <= time && done[i] == 0){
-                if(bt[i] < minBT){
+                if(bt[i] < minBT || 
+                  (bt[i] == minBT && at[i] < at[idx])){
                     minBT = bt[i];
                     idx = i;
                 }
